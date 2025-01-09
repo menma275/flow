@@ -1,6 +1,7 @@
 [
   {
     "origin": [
+      "https://flow-album.vercel.app",
       "http://localhost:5173"
     ],
     "method": [
