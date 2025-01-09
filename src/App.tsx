@@ -113,7 +113,7 @@ function Scene({
   return (
     <>
       <OrbitControls
-        touches={{ ONE: THREE.TOUCH.PAN }}
+        touches={{ ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_PAN }}
         enableZoom={true} enablePan={true} enableRotate={false} />
       <group onPointerMissed={handlePointerMissed}>
         {imageUrls.map((url, index) => (
