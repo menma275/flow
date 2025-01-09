@@ -1,10 +1,14 @@
-import './App.css';
-import { useEffect, useState, useRef } from 'react';
-import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
-import { useProgress, OrbitControls } from '@react-three/drei';
-import { EffectComposer, DepthOfField, Noise, Vignette, ChromaticAberration } from '@react-three/postprocessing';
-import * as THREE from 'three';
-import ImageUrls from './firebase/imageUrls';
+import "./App.css";
+import { useEffect, useState, useRef } from "react";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+import {
+  EffectComposer,
+  DepthOfField,
+  Vignette,
+} from "@react-three/postprocessing";
+import * as THREE from "three";
+import ImageUrls from "./firebase/imageUrls";
 
 function Photo({
   url,
@@ -26,8 +30,10 @@ function Photo({
   const width = 10;
   const height = width / aspect;
   const borderWidth = 0.25;
-  const [hovered, setHovered] = useState<boolean>(false);
-
+  // const [hovered, setHovered] = useState<boolean>(false);
+  // const [hoveredObject, setHoveredObject] = useState<THREE.Object3D | null>(
+  //   null
+  // );
   const ref = useRef<THREE.Group>(null);
 
   useFrame(() => {
@@ -49,28 +55,33 @@ function Photo({
   });
 
   return (
-    <group
-      ref={ref}
-      position={position}
-      // onPointerOver={() => setHovered(true)}
-      // onPointerOut={() => setHovered(false)}
-      // scale={hovered ? 1.25 : 1}
-      onClick={(e) => {
-        e.stopPropagation(); // Prevent propagation to Canvas
-        onClick();
-      }}
-    >
-      <mesh
-        position-z={-0.05}
+    <>
+      <group
+        ref={ref}
+        position={position}
+        // onPointerOver={() => {
+        //   setHovered(true);
+        //   setHoveredObject(ref.current);
+        // }}
+        // onPointerOut={() => {
+        //   setHovered(false);
+        //   setHoveredObject(null);
+        // }}
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent propagation to Canvas
+          onClick();
+        }}
       >
-        <planeGeometry args={[width + borderWidth, height + borderWidth]} />
-        <meshBasicMaterial color="white" />
-      </mesh>
-      <mesh>
-        <planeGeometry args={[width, height]} />
-        <meshBasicMaterial map={texture} />
-      </mesh>
-    </group >
+        <mesh position-z={-0.05}>
+          <planeGeometry args={[width + borderWidth, height + borderWidth]} />
+          <meshBasicMaterial color="white" />
+        </mesh>
+        <mesh>
+          <planeGeometry args={[width, height]} />
+          <meshBasicMaterial map={texture} />
+        </mesh>
+      </group>
+    </>
   );
 }
 
@@ -88,7 +99,10 @@ function Scene({
   const { camera } = useThree();
 
   const handleClick = (index: number) => {
-    setSelectedIndex((prevIndex: number) => (prevIndex === index ? null : index));
+    if (selectedIndex === index)
+      setSelectedIndex(null)
+    else
+      setSelectedIndex(index)
   };
 
   const handlePointerMissed = () => {
@@ -105,7 +119,11 @@ function Scene({
             url={url}
             position={positions[index]}
             isSelected={selectedIndex === index}
-            cameraPos={[camera.position.x, camera.position.y, camera.position.z]}
+            cameraPos={[
+              camera.position.x,
+              camera.position.y,
+              camera.position.z,
+            ]}
             onClick={() => handleClick(index)}
             selectedIndex={selectedIndex}
           />
@@ -116,8 +134,8 @@ function Scene({
           focusDistance={0}
           focalLength={0.05}
           bokehScale={5}
-          height={480} />
-        {/* <Noise opacity={0.15} /> */}
+          height={480}
+        />
         <Vignette eskil={false} offset={0.05} darkness={0.65} />
       </EffectComposer>
     </>
@@ -148,12 +166,16 @@ function App() {
   return (
     <div className="w-full bg-['#151515']">
       <div className="w-full h-dvh">
-        {!isLoaded &&
-          <h1 className="w-full h-dvh text-2xl font-bold flex text-center items-center justify-center">Loading...</h1>
-        }
-        <Canvas onCreated={() => setIsLoaded(true)} camera={{ position: [0, 0, 25], fov: 100 }}>
-          <color attach="background" args={['#eee']} />
-          {/* <color attach="background" args={['#151515']} /> */}
+        {!isLoaded && (
+          <h1 className="w-full h-dvh text-2xl font-bold flex text-center items-center justify-center">
+            Loading...
+          </h1>
+        )}
+        <Canvas
+          onCreated={() => setIsLoaded(true)}
+          camera={{ position: [0, 0, 25], fov: 100 }}
+        >
+          <color attach="background" args={["#eee"]} />
           <Scene
             imageUrls={imageUrls}
             positions={positions}
