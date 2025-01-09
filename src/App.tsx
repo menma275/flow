@@ -40,7 +40,7 @@ function Photo({
   useFrame(() => {
     if (ref.current) {
       const targetPosition = isSelected
-        ? new THREE.Vector3(cameraPos[0], cameraPos[1], cameraPos[2] - 10)
+        ? new THREE.Vector3(cameraPos[0], cameraPos[1], cameraPos[2] - 3.5)
         : selectedIndex !== null
           ? new THREE.Vector3(
               position[0] + (position[0] - cameraPos[0]),
@@ -243,11 +243,11 @@ function App() {
             setSelectedIndex={setSelectedIndex}
           />
         </Canvas>
-        <div className="fixed text-white w-fit top-0 left-0 p-6 flex flex-col gap-0 text-sm">
+        <div className="fixed text-white w-fit top-0 left-0 p-6 flex flex-col gap-0 text-sm cursor-default">
           <h1 className="text-lg font-pacifico">Flow</h1>
           <p className="text-xs">Photo album in 3D space</p>
         </div>
-        <div className="fixed text-white w-fit bottom-0 right-0 p-6 flex flex-col gap-0 text-xs">
+        <div className="fixed text-white w-fit bottom-0 right-0 p-6 flex flex-col gap-0 text-xs cursor-default">
           <p>Scroll and Drag to discover</p>
           <p>Click to see the details</p>
         </div>
