@@ -1,4 +1,5 @@
 import "./App.css";
+import exifr from "exifr"
 import { useEffect, useState, useRef } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { OrbitControls, useProgress } from "@react-three/drei";
@@ -27,7 +28,7 @@ function Photo({
 }) {
   const texture = useLoader(THREE.TextureLoader, url);
   const aspect = texture.image.width / texture.image.height;
-  const width = 10;
+  const width = 5;
   const height = width / aspect;
   const borderWidth = 0.25;
   // const [hovered, setHovered] = useState<boolean>(false);
@@ -58,7 +59,7 @@ function Photo({
     <>
       <group
         ref={ref}
-        position={position}
+        // position={hovered ? [position[0], position[1], position[2] + 1] : position}
         // onPointerOver={() => {
         //   setHovered(true);
         //   setHoveredObject(ref.current);
@@ -144,6 +145,13 @@ function Scene({
   );
 }
 
+const normalizePosition = (value: number, min: number, max: number, range: number) => {
+  if (max === min) {
+    return 0; // 最小値と最大値が同じ場合、正規化結果は中心（0）
+  }
+  return ((value - min) / (max - min)) * range - range / 2;
+};
+
 function App() {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
@@ -155,12 +163,53 @@ function App() {
     const fetchUrls = async () => {
       const urls = await ImageUrls();
       setImageUrls(urls);
-      const range = 75;
-      const newPositions: [number, number, number][] = urls.map((_, index) => [
-        Math.random() * range - range / 2,
-        Math.random() * range - range / 2,
-        -index,
-      ]);
+      const range = 65;
+      // const newPositions: [number, number, number][] = urls.map((url, index) => [
+      //   Math.random() * range - range / 2,
+      //   Math.random() * range - range / 2,
+      //   -index,
+      // )];
+      const latitudes: number[] = [];
+      const longitudes: number[] = [];
+
+      const metadataList = await Promise.all(
+        urls.map(async (url) => {
+          try {
+            const metadata = await exifr.parse(url);
+            return {
+              latitude: metadata?.latitude,
+              longitude: metadata?.longitude,
+            };
+          } catch (error) {
+            console.error(`Error reading metadata from ${url}:`, error);
+            return { latitude: null, longitude: null };
+          }
+        })
+      );
+
+      metadataList.forEach((metadata) => {
+        if (metadata.latitude !== null) latitudes.push(metadata.latitude);
+        if (metadata.longitude !== null) longitudes.push(metadata.longitude);
+      });
+
+      const latMin = Math.min(...latitudes);
+      const latMax = Math.max(...latitudes);
+      const lonMin = Math.min(...longitudes);
+      const lonMax = Math.max(...longitudes);
+
+      const newPositions: [number, number, number][] = metadataList.map((metadata, index) => {
+        const latitude =
+          metadata.latitude !== null
+            ? normalizePosition(metadata.latitude, latMin, latMax, range)
+            : Math.random() * range - range / 2;
+
+        const longitude =
+          metadata.longitude !== null
+            ? normalizePosition(metadata.longitude, lonMin, lonMax, range)
+            : Math.random() * range - range / 2;
+
+        return [longitude, latitude, -index * 0.25];
+      });
       setPositions(newPositions);
     };
     fetchUrls();
