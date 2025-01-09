@@ -1,7 +1,7 @@
 import "./App.css";
 import { useEffect, useState, useRef } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, useProgress } from "@react-three/drei";
 import {
   EffectComposer,
   DepthOfField,
@@ -149,6 +149,7 @@ function App() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [positions, setPositions] = useState<[number, number, number][]>([]);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const { progress } = useProgress()
 
   useEffect(() => {
     const fetchUrls = async () => {
@@ -165,16 +166,21 @@ function App() {
     fetchUrls();
   }, []);
 
+  useEffect(() => {
+    if (progress >= 100) {
+      setIsLoaded(true);
+    }
+  }, [progress]);
+
   return (
     <div className="w-full bg-['#151515']">
       <div className="w-full h-dvh">
         {!isLoaded && (
-          <h1 className="w-full h-dvh text-2xl font-bold flex text-center items-center justify-center">
-            Loading...
+          <h1 className="fixed top-1/2 left-1/2 z-10 text-2xl font-bold text-white -translate-x-1/2 -translate-y-1/2">
+            Loading... {Math.round(progress)}%
           </h1>
         )}
         <Canvas
-          onCreated={() => setIsLoaded(true)}
           camera={{ position: [0, 0, 25], fov: 100 }}
         >
           <color attach="background" args={["#eee"]} />
