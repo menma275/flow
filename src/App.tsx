@@ -1,5 +1,5 @@
 import "./App.css";
-import exifr from "exifr"
+import exifr from "exifr";
 import { useEffect, useState, useRef } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { OrbitControls, useProgress } from "@react-three/drei";
@@ -43,13 +43,10 @@ function Photo({
         ? new THREE.Vector3(cameraPos[0], cameraPos[1], cameraPos[2] - 10)
         : selectedIndex !== null
           ? new THREE.Vector3(
-            // position[0] * 1.5,
-            // position[1] * 1.5,
-            // position[2]
-            (position[0] - cameraPos[0]) * 1.5,
-            (position[1] - cameraPos[1]) * 1.5,
-            position[2]
-          )
+              position[0] + (position[0] - cameraPos[0]),
+              position[1] + (position[1] - cameraPos[1]),
+              position[2],
+            )
           : new THREE.Vector3(...position);
       ref.current.position.lerp(targetPosition, 0.15);
     }
@@ -100,10 +97,8 @@ function Scene({
   const { camera } = useThree();
 
   const handleClick = (index: number) => {
-    if (selectedIndex === index)
-      setSelectedIndex(null)
-    else
-      setSelectedIndex(index)
+    if (selectedIndex === index) setSelectedIndex(null);
+    else setSelectedIndex(index);
   };
 
   const handlePointerMissed = () => {
@@ -114,7 +109,10 @@ function Scene({
     <>
       <OrbitControls
         touches={{ ONE: THREE.TOUCH.PAN, TWO: THREE.TOUCH.DOLLY_PAN }}
-        enableZoom={true} enablePan={true} enableRotate={false} />
+        enableZoom={true}
+        enablePan={true}
+        enableRotate={false}
+      />
       <group onPointerMissed={handlePointerMissed}>
         {imageUrls.map((url, index) => (
           <Photo
@@ -145,7 +143,12 @@ function Scene({
   );
 }
 
-const normalizePosition = (value: number, min: number, max: number, range: number) => {
+const normalizePosition = (
+  value: number,
+  min: number,
+  max: number,
+  range: number,
+) => {
   if (max === min) {
     return 0; // 最小値と最大値が同じ場合、正規化結果は中心（0）
   }
@@ -157,7 +160,7 @@ function App() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [positions, setPositions] = useState<[number, number, number][]>([]);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
-  const { progress } = useProgress()
+  const { progress } = useProgress();
 
   useEffect(() => {
     const fetchUrls = async () => {
@@ -184,7 +187,7 @@ function App() {
             console.error(`Error reading metadata from ${url}:`, error);
             return { latitude: null, longitude: null };
           }
-        })
+        }),
       );
 
       metadataList.forEach((metadata) => {
@@ -197,19 +200,21 @@ function App() {
       const lonMin = Math.min(...longitudes);
       const lonMax = Math.max(...longitudes);
 
-      const newPositions: [number, number, number][] = metadataList.map((metadata, index) => {
-        const latitude =
-          metadata.latitude !== null
-            ? normalizePosition(metadata.latitude, latMin, latMax, range)
-            : Math.random() * range - range / 2;
+      const newPositions: [number, number, number][] = metadataList.map(
+        (metadata, index) => {
+          const latitude =
+            metadata.latitude !== null
+              ? normalizePosition(metadata.latitude, latMin, latMax, range)
+              : Math.random() * range - range / 2;
 
-        const longitude =
-          metadata.longitude !== null
-            ? normalizePosition(metadata.longitude, lonMin, lonMax, range)
-            : Math.random() * range - range / 2;
+          const longitude =
+            metadata.longitude !== null
+              ? normalizePosition(metadata.longitude, lonMin, lonMax, range)
+              : Math.random() * range - range / 2;
 
-        return [longitude, latitude, -index * 0.25];
-      });
+          return [longitude, latitude, -index * 0.25];
+        },
+      );
       setPositions(newPositions);
     };
     fetchUrls();
@@ -229,9 +234,7 @@ function App() {
             Loading... {Math.round(progress)}%
           </h1>
         )}
-        <Canvas
-          camera={{ position: [0, 0, 25], fov: 100 }}
-        >
+        <Canvas camera={{ position: [0, 0, 25], fov: 100 }}>
           <color attach="background" args={["#eee"]} />
           <Scene
             imageUrls={imageUrls}
