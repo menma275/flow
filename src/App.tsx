@@ -40,7 +40,7 @@ function Photo({
   useFrame(() => {
     if (ref.current) {
       const targetPosition = isSelected
-        ? new THREE.Vector3(cameraPos[0], cameraPos[1], cameraPos[2] - 3.5)
+        ? new THREE.Vector3(cameraPos[0], cameraPos[1], cameraPos[2] - 5)
         : selectedIndex !== null
           ? new THREE.Vector3(
               position[0] + (position[0] - cameraPos[0]),
@@ -150,7 +150,7 @@ const normalizePosition = (
   range: number,
 ) => {
   if (max === min) {
-    return 0; // 最小値と最大値が同じ場合、正規化結果は中心（0）
+    return 0;
   }
   return ((value - min) / (max - min)) * range - range / 2;
 };
