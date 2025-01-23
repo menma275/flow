@@ -243,18 +243,22 @@ function App() {
           <h1 className="text-lg font-pacifico">Flow</h1>
           <p className="text-xs">Photo album in 3D space</p>
         </div>
-        <div className="fixed text-white  bottom-0 right-0 p-6 flex flex-row w-full gap-0 justify-end items-end text-xs cursor-default">
-          {/* <div> */}
-          {/*   <p>Scroll and Drag to discover</p> */}
-          {/*   <p>Click to see the details</p> */}
-          {/* </div> */}
+        <div className="fixed text-white  bottom-0 right-0 p-6 flex flex-row w-full gap-0 justify-between items-end text-xs cursor-default">
+          <div>
+            <p>Scroll and Drag to discover</p>
+            <p>Click to see the details</p>
+          </div>
           <label className="w-fit flex flex-wrap items-center justify-end gap-2">
-            Change placement :
             <button
-              className="font-bold px-3 py-1 bg-white text-black rounded-full"
+              className="font-bold px-3 py-1 bg-white bg-opacity-30 backdrop-blur-lg text-white rounded-full border border-white flex gap-2"
               onClick={() => setIsRandomPlacement(!isRandomPlacement)}
             >
-              {isRandomPlacement ? "Location" : "Random"}
+              <span className={isRandomPlacement ? "text-neutral-400" : ""}>
+                Location
+              </span>
+              <span className={isRandomPlacement ? "" : "text-neutral-400"}>
+                Random
+              </span>
             </button>
           </label>
         </div>
