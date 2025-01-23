@@ -146,6 +146,9 @@ function App() {
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [positions, setPositions] = useState<[number, number, number][]>([]);
+  const [randomPositions, setRandomPositions] = useState<
+    [number, number, number][]
+  >([]);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [isRandomPlacement, setIsRandomPlacement] = useState<boolean>(true);
   const { progress } = useProgress();
@@ -155,11 +158,6 @@ function App() {
       const urls = await ImageUrls();
       setImageUrls(urls);
       const range = 65;
-      // const newPositions: [number, number, number][] = urls.map((url, index) => [
-      //   Math.random() * range - range / 2,
-      //   Math.random() * range - range / 2,
-      //   -index,
-      // )];
       const latitudes: number[] = [];
       const longitudes: number[] = [];
 
@@ -189,7 +187,7 @@ function App() {
       const lonMax = Math.max(...longitudes);
 
       const newPositions: [number, number, number][] = metadataList.map(
-        (metadata, index) => {
+        (metadata) => {
           const latitude =
             metadata.latitude !== null
               ? normalizePosition(metadata.latitude, latMin, latMax, range)
@@ -200,21 +198,23 @@ function App() {
               ? normalizePosition(metadata.longitude, lonMin, lonMax, range)
               : Math.random() * range - range / 2;
 
-          if (isRandomPlacement) {
-            return [
-              Math.random() * range - range / 2,
-              Math.random() * range - range / 2,
-              Math.random() - 1.0,
-            ];
-          } else {
-            return [longitude, latitude, -index * 0.25];
-          }
+          return [longitude, latitude, Math.random() - 1.0];
+        },
+      );
+      const newRandomPositions: [number, number, number][] = metadataList.map(
+        () => {
+          return [
+            Math.random() * range - range / 2,
+            Math.random() * range - range / 2,
+            Math.random() - 1.0,
+          ];
         },
       );
       setPositions(newPositions);
+      setRandomPositions(newRandomPositions);
     };
     fetchUrls();
-  }, [isRandomPlacement]);
+  }, []);
 
   useEffect(() => {
     if (progress >= 100) {
@@ -223,10 +223,10 @@ function App() {
   }, [progress]);
 
   return (
-    <div className="w-full bg-['#151515']">
+    <div className="w-full bg-['#151515'] text-white text-xs">
       <div className="w-full h-dvh">
         {!isLoaded && (
-          <h1 className="fixed top-1/2 left-1/2 z-10 text-2xl font-bold text-white -translate-x-1/2 -translate-y-1/2">
+          <h1 className="fixed top-1/2 left-1/2 z-10 text-2xl font-bold -translate-x-1/2 -translate-y-1/2">
             Loading... {Math.round(progress)}%
           </h1>
         )}
@@ -234,34 +234,37 @@ function App() {
           <color attach="background" args={["#eee"]} />
           <Scene
             imageUrls={imageUrls}
-            positions={positions}
+            positions={isRandomPlacement ? randomPositions : positions}
             selectedIndex={selectedIndex}
             setSelectedIndex={setSelectedIndex}
           />
         </Canvas>
-        <div className="fixed text-white w-fit top-0 left-0 p-6 flex flex-col gap-0 text-sm cursor-default">
+        <div className="fixed top-0 left-0 p-6 flex flex-col  cursor-default">
           <h1 className="text-lg font-pacifico">Flow</h1>
-          <p className="text-xs">Photo album in 3D space</p>
+          <p className="">Photo album in 3D space</p>
         </div>
-        <div className="fixed text-white  bottom-0 right-0 p-6 flex flex-row w-full gap-0 justify-between items-end text-xs cursor-default">
-          <div>
-            <p>Scroll and Drag to discover</p>
-            <p>Click to see the details</p>
+        {isLoaded && (
+          <div className="fixed bottom-0 left-0 p-6 flex flex-row w-full justify-between items-end text-xs cursor-default">
+            <p className="flex flex-col gap-1">
+              <span>Scroll and Drag to discover</span>
+              <span>Click to see the details</span>
+            </p>
+            <label className="w-fit flex flex-wrap items-center justify-end gap-2">
+              <button
+                className="font-bold px-3 py-1 bg-white bg-opacity-30 backdrop-blur-lg rounded-full border border-white flex gap-2"
+                onClick={() => setIsRandomPlacement(!isRandomPlacement)}
+              >
+                <span className={isRandomPlacement ? "text-neutral-400" : ""}>
+                  Location
+                </span>
+                <span>/</span>
+                <span className={isRandomPlacement ? "" : "text-neutral-400"}>
+                  Random
+                </span>
+              </button>
+            </label>
           </div>
-          <label className="w-fit flex flex-wrap items-center justify-end gap-2">
-            <button
-              className="font-bold px-3 py-1 bg-white bg-opacity-30 backdrop-blur-lg text-white rounded-full border border-white flex gap-2"
-              onClick={() => setIsRandomPlacement(!isRandomPlacement)}
-            >
-              <span className={isRandomPlacement ? "text-neutral-400" : ""}>
-                Location
-              </span>
-              <span className={isRandomPlacement ? "" : "text-neutral-400"}>
-                Random
-              </span>
-            </button>
-          </label>
-        </div>
+        )}
       </div>
     </div>
   );
