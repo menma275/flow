@@ -31,10 +31,6 @@ function Photo({
   const width = 5;
   const height = width / aspect;
   const borderWidth = 0.25;
-  // const [hovered, setHovered] = useState<boolean>(false);
-  // const [hoveredObject, setHoveredObject] = useState<THREE.Object3D | null>(
-  //   null
-  // );
   const ref = useRef<THREE.Group>(null);
 
   useFrame(() => {
@@ -56,17 +52,8 @@ function Photo({
     <>
       <group
         ref={ref}
-        // position={hovered ? [position[0], position[1], position[2] + 1] : position}
-        // onPointerOver={() => {
-        //   setHovered(true);
-        //   setHoveredObject(ref.current);
-        // }}
-        // onPointerOut={() => {
-        //   setHovered(false);
-        //   setHoveredObject(null);
-        // }}
         onClick={(e) => {
-          e.stopPropagation(); // Prevent propagation to Canvas
+          e.stopPropagation();
           onClick();
         }}
       >
@@ -160,6 +147,7 @@ function App() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [positions, setPositions] = useState<[number, number, number][]>([]);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [isRandomPlacement, setIsRandomPlacement] = useState<boolean>(true);
   const { progress } = useProgress();
 
   useEffect(() => {
@@ -212,13 +200,21 @@ function App() {
               ? normalizePosition(metadata.longitude, lonMin, lonMax, range)
               : Math.random() * range - range / 2;
 
-          return [longitude, latitude, -index * 0.25];
+          if (isRandomPlacement) {
+            return [
+              Math.random() * range - range / 2,
+              Math.random() * range - range / 2,
+              Math.random() - 1.0,
+            ];
+          } else {
+            return [longitude, latitude, -index * 0.25];
+          }
         },
       );
       setPositions(newPositions);
     };
     fetchUrls();
-  }, []);
+  }, [isRandomPlacement]);
 
   useEffect(() => {
     if (progress >= 100) {
@@ -247,9 +243,22 @@ function App() {
           <h1 className="text-lg font-pacifico">Flow</h1>
           <p className="text-xs">Photo album in 3D space</p>
         </div>
-        <div className="fixed text-white w-fit bottom-0 right-0 p-6 flex flex-col gap-0 text-xs cursor-default">
-          <p>Scroll and Drag to discover</p>
-          <p>Click to see the details</p>
+        <div className="fixed text-white w-fit bottom-0 right-0 p-6 flex flex-row w-full gap-0 justify-between items-end text-xs cursor-default">
+          <div>
+            <p>Scroll and Drag to discover</p>
+            <p>Click to see the details</p>
+          </div>
+          <div>
+            <label>
+              Change placement to{" "}
+              <button
+                className="font-bold px-3 py-1 bg-white text-black rounded-full"
+                onClick={() => setIsRandomPlacement(!isRandomPlacement)}
+              >
+                {isRandomPlacement ? "Random" : "Location"}
+              </button>
+            </label>
+          </div>
         </div>
       </div>
     </div>
