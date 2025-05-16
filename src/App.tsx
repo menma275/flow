@@ -33,6 +33,7 @@ function Photo({
   const borderWidth = 0.25;
   const ref = useRef<THREE.Group>(null);
 
+  // click behavior
   useFrame(() => {
     if (ref.current) {
       const targetPosition = isSelected
@@ -187,7 +188,7 @@ function App() {
       const lonMax = Math.max(...longitudes);
 
       const newPositions: [number, number, number][] = metadataList.map(
-        (metadata) => {
+        (metadata, index) => {
           const latitude =
             metadata.latitude !== null
               ? normalizePosition(metadata.latitude, latMin, latMax, range)
@@ -198,15 +199,15 @@ function App() {
               ? normalizePosition(metadata.longitude, lonMin, lonMax, range)
               : Math.random() * range - range / 2;
 
-          return [longitude, latitude, Math.random() - 1.0];
+          return [longitude, latitude, -index * 0.05];
         },
       );
       const newRandomPositions: [number, number, number][] = metadataList.map(
-        () => {
+        (_, index) => {
           return [
             Math.random() * range - range / 2,
             Math.random() * range - range / 2,
-            Math.random() - 1.0,
+            -index * 0.05,
           ];
         },
       );
@@ -255,7 +256,7 @@ function App() {
                 onClick={() => setIsRandomPlacement(!isRandomPlacement)}
               >
                 <span className={isRandomPlacement ? "text-neutral-400" : ""}>
-                  Location
+                  GeoBase
                 </span>
                 <span>/</span>
                 <span className={isRandomPlacement ? "" : "text-neutral-400"}>
